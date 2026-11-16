@@ -1,0 +1,322 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="DemografiaLocalApp.MainPage"
+             Title="Nomes"
+             BackgroundColor="{AppThemeBinding Light=#F5F6FA, Dark=#0F1115}">
+
+    <ContentPage.Resources>
+
+        <!-- Card padrão usado pelos seletores e pelas listas -->
+        <Style x:Key="CardBorder" TargetType="Border">
+            <Setter Property="BackgroundColor" Value="{AppThemeBinding Light=White, Dark=#1A1D24}" />
+            <Setter Property="Stroke" Value="{AppThemeBinding Light=#E4E7EC, Dark=#2A2F3A}" />
+            <Setter Property="StrokeThickness" Value="1" />
+            <Setter Property="StrokeShape" Value="RoundRectangle 16" />
+            <Setter Property="Padding" Value="14" />
+        </Style>
+
+        <Style x:Key="ModoSegmentoButton" TargetType="Button">
+            <Setter Property="BackgroundColor" Value="Transparent" />
+            <Setter Property="TextColor" Value="{AppThemeBinding Light=#475467, Dark=#98A2B3}" />
+            <Setter Property="FontFamily" Value="OpenSansRegular" />
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="FontAttributes" Value="Bold" />
+            <Setter Property="TextTransform" Value="None" />
+            <Setter Property="HeightRequest" Value="42" />
+            <Setter Property="CornerRadius" Value="9" />
+            <Setter Property="Padding" Value="0" />
+        </Style>
+
+        <Style x:Key="Rotulo" TargetType="Label">
+            <Setter Property="FontFamily" Value="OpenSansRegular" />
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="FontAttributes" Value="Bold" />
+            <Setter Property="TextColor" Value="{AppThemeBinding Light=#667085, Dark=#98A2B3}" />
+        </Style>
+
+        <!-- Item de nome: nome à esquerda, frequência à direita -->
+        <DataTemplate x:Key="NomeItemTemplate">
+            <Grid Padding="12,8"
+                  ColumnDefinitions="*,Auto"
+                  ColumnSpacing="12">
+                <Label Text="{Binding NomeExibicao}"
+                       FontSize="15"
+                       VerticalOptions="Center"
+                       LineBreakMode="TailTruncation" />
+                <Label Grid.Column="1"
+                       Text="{Binding Frequencia, StringFormat='{0:N0}'}"
+                       FontSize="13"
+                       VerticalOptions="Center"
+                       TextColor="{AppThemeBinding Light=#667085, Dark=#98A2B3}" />
+            </Grid>
+        </DataTemplate>
+
+    </ContentPage.Resources>
+
+    <Grid Padding="20,16,20,20"
+          RowDefinitions="Auto,Auto,Auto,Auto,*"
+          RowSpacing="12">
+
+        <!-- Cabeçalho -->
+        <VerticalStackLayout Grid.Row="0" Spacing="2">
+            <Label Text="IBGE · CENSO 2022"
+                   FontSize="11"
+                   FontAttributes="Bold"
+                   TextColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}" />
+            <Label Text="Nomes mais comuns"
+                   FontSize="26"
+                   FontAttributes="Bold"
+                   SemanticProperties.HeadingLevel="Level1" />
+            <Label Text="Consulte os nomes mais frequentes de homens e mulheres em qualquer estado ou município."
+                   FontSize="13"
+                   TextColor="{AppThemeBinding Light=#667085, Dark=#98A2B3}" />
+        </VerticalStackLayout>
+
+        <!-- Seleção da localidade -->
+        <Border Grid.Row="1" Style="{StaticResource CardBorder}">
+            <VerticalStackLayout Spacing="8">
+
+                <!-- Alternância Estado / Município -->
+                <Border BackgroundColor="{AppThemeBinding Light=#F2F4F7, Dark=#232833}"
+                        StrokeThickness="0"
+                        StrokeShape="RoundRectangle 12"
+                        Padding="4">
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="4">
+                        <Button Text="Estado"
+                                Style="{StaticResource ModoSegmentoButton}"
+                                Command="{Binding SelecionarModoEstadoCommand}"
+                                SemanticProperties.Hint="Consultar nomes por estado">
+                            <Button.Triggers>
+                                <DataTrigger TargetType="Button"
+                                             Binding="{Binding ModoEstado}"
+                                             Value="True">
+                                    <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}" />
+                                    <Setter Property="TextColor" Value="{AppThemeBinding Light=White, Dark={StaticResource PrimaryDarkText}}" />
+                                </DataTrigger>
+                            </Button.Triggers>
+                        </Button>
+
+                        <Button Grid.Column="1"
+                                Text="Município"
+                                Style="{StaticResource ModoSegmentoButton}"
+                                Command="{Binding SelecionarModoMunicipioCommand}"
+                                SemanticProperties.Hint="Consultar nomes por município">
+                            <Button.Triggers>
+                                <DataTrigger TargetType="Button"
+                                             Binding="{Binding ModoMunicipio}"
+                                             Value="True">
+                                    <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}" />
+                                    <Setter Property="TextColor" Value="{AppThemeBinding Light=White, Dark={StaticResource PrimaryDarkText}}" />
+                                </DataTrigger>
+                            </Button.Triggers>
+                        </Button>
+                    </Grid>
+                </Border>
+
+                <Label Text="ESTADO" Style="{StaticResource Rotulo}" />
+                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                    <Picker Title="Selecione um estado"
+                            ItemsSource="{Binding Estados}"
+                            ItemDisplayBinding="{Binding Descricao}"
+                            SelectedItem="{Binding EstadoSelecionado, Mode=TwoWay}"
+                            TextColor="{AppThemeBinding Light=#1D2939, Dark=#F2F4F7}"
+                            TitleColor="{AppThemeBinding Light=#98A2B3, Dark=#98A2B3}"
+                            SemanticProperties.Hint="Escolha o estado" />
+                    <ActivityIndicator Grid.Column="1"
+                                       IsRunning="{Binding EstaCarregandoEstados}"
+                                       IsVisible="{Binding EstaCarregandoEstados}"
+                                       WidthRequest="20"
+                                       HeightRequest="20"
+                                       VerticalOptions="Center"
+                                       Color="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}" />
+                </Grid>
+
+                <!-- Só aparece no modo Município -->
+                <VerticalStackLayout Spacing="2"
+                                     IsVisible="{Binding ModoMunicipio}">
+                    <Label Text="MUNICÍPIO" Style="{StaticResource Rotulo}" />
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                        <Picker Title="Selecione um município"
+                                ItemsSource="{Binding Municipios}"
+                                ItemDisplayBinding="{Binding Descricao}"
+                                SelectedItem="{Binding MunicipioSelecionado, Mode=TwoWay}"
+                                TextColor="{AppThemeBinding Light=#1D2939, Dark=#F2F4F7}"
+                                TitleColor="{AppThemeBinding Light=#98A2B3, Dark=#98A2B3}"
+                                SemanticProperties.Hint="Escolha o município" />
+                        <ActivityIndicator Grid.Column="1"
+                                           IsRunning="{Binding EstaCarregandoMunicipios}"
+                                           IsVisible="{Binding EstaCarregandoMunicipios}"
+                                           WidthRequest="20"
+                                           HeightRequest="20"
+                                           VerticalOptions="Center"
+                                           Color="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}" />
+                    </Grid>
+                </VerticalStackLayout>
+            </VerticalStackLayout>
+        </Border>
+
+        <!-- Erro de comunicação com o IBGE -->
+        <Border Grid.Row="2"
+                IsVisible="{Binding TemErro}"
+                BackgroundColor="{AppThemeBinding Light=#FEF3F2, Dark=#3B1D1D}"
+                Stroke="{AppThemeBinding Light=#FDA29B, Dark=#7A2E2E}"
+                StrokeThickness="1"
+                StrokeShape="RoundRectangle 12"
+                Padding="12">
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                <Label Text="{Binding MensagemErro}"
+                       FontSize="13"
+                       VerticalOptions="Center"
+                       TextColor="{AppThemeBinding Light=#B42318, Dark=#FDA29B}" />
+                <Button Grid.Column="1"
+                        Text="Tentar novamente"
+                        Command="{Binding TentarNovamenteCommand}"
+                        FontSize="12"
+                        FontAttributes="Bold"
+                        TextTransform="None"
+                        HeightRequest="34"
+                        Padding="10,0"
+                        CornerRadius="8"
+                        BackgroundColor="Transparent"
+                        BorderWidth="1"
+                        BorderColor="{AppThemeBinding Light=#FDA29B, Dark=#7A2E2E}"
+                        TextColor="{AppThemeBinding Light=#B42318, Dark=#FDA29B}" />
+            </Grid>
+        </Border>
+
+        <!-- Sobrenomes mais comuns (faixa horizontal) -->
+        <VerticalStackLayout Grid.Row="3"
+                             Spacing="6"
+                             IsVisible="{Binding TemSobrenomes}">
+            <Label Text="SOBRENOMES MAIS COMUNS" Style="{StaticResource Rotulo}" />
+            <ScrollView Orientation="Horizontal"
+                        HorizontalScrollBarVisibility="Never">
+                <HorizontalStackLayout Spacing="8"
+                                       BindableLayout.ItemsSource="{Binding Sobrenomes}">
+                    <BindableLayout.ItemTemplate>
+                        <DataTemplate>
+                            <Border BackgroundColor="{AppThemeBinding Light=#F2F4F7, Dark=#232833}"
+                                    StrokeThickness="0"
+                                    StrokeShape="RoundRectangle 20"
+                                    Padding="12,6">
+                                <Label Text="{Binding NomeExibicao}"
+                                       FontSize="13" />
+                            </Border>
+                        </DataTemplate>
+                    </BindableLayout.ItemTemplate>
+                </HorizontalStackLayout>
+            </ScrollView>
+        </VerticalStackLayout>
+
+        <!-- Resultados: Homens e Mulheres em cartões separados -->
+        <Grid Grid.Row="4"
+              RowDefinitions="*,*"
+              RowSpacing="12"
+              IsVisible="{Binding TemNomes}">
+
+            <Border Grid.Row="0"
+                    Style="{StaticResource CardBorder}"
+                    Padding="0">
+                <Grid RowDefinitions="Auto,*">
+                    <Grid Padding="14,12"
+                          ColumnDefinitions="Auto,*,Auto"
+                          ColumnSpacing="8">
+                        <BoxView WidthRequest="4"
+                                 HeightRequest="18"
+                                 CornerRadius="2"
+                                 Color="#2563EB"
+                                 VerticalOptions="Center" />
+                        <Label Grid.Column="1"
+                               Text="Homens"
+                               FontSize="15"
+                               FontAttributes="Bold"
+                               VerticalOptions="Center" />
+                        <Label Grid.Column="2"
+                               Text="{Binding NomesHomens.Count, StringFormat='{0} nomes'}"
+                               FontSize="12"
+                               VerticalOptions="Center"
+                               TextColor="{AppThemeBinding Light=#667085, Dark=#98A2B3}" />
+                    </Grid>
+
+                    <CollectionView Grid.Row="1"
+                                    ItemsSource="{Binding NomesHomens}"
+                                    ItemTemplate="{StaticResource NomeItemTemplate}"
+                                    SelectionMode="None"
+                                    Margin="4,0,4,8"
+                                    VerticalScrollBarVisibility="Never" />
+                </Grid>
+            </Border>
+
+            <Border Grid.Row="1"
+                    Style="{StaticResource CardBorder}"
+                    Padding="0">
+                <Grid RowDefinitions="Auto,*">
+                    <Grid Padding="14,12"
+                          ColumnDefinitions="Auto,*,Auto"
+                          ColumnSpacing="8">
+                        <BoxView WidthRequest="4"
+                                 HeightRequest="18"
+                                 CornerRadius="2"
+                                 Color="#DB2777"
+                                 VerticalOptions="Center" />
+                        <Label Grid.Column="1"
+                               Text="Mulheres"
+                               FontSize="15"
+                               FontAttributes="Bold"
+                               VerticalOptions="Center" />
+                        <Label Grid.Column="2"
+                               Text="{Binding NomesMulheres.Count, StringFormat='{0} nomes'}"
+                               FontSize="12"
+                               VerticalOptions="Center"
+                               TextColor="{AppThemeBinding Light=#667085, Dark=#98A2B3}" />
+                    </Grid>
+
+                    <CollectionView Grid.Row="1"
+                                    ItemsSource="{Binding NomesMulheres}"
+                                    ItemTemplate="{StaticResource NomeItemTemplate}"
+                                    SelectionMode="None"
+                                    Margin="4,0,4,8"
+                                    VerticalScrollBarVisibility="Never" />
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!-- Carregando nomes -->
+        <VerticalStackLayout Grid.Row="4"
+                             Spacing="10"
+                             VerticalOptions="Center"
+                             IsVisible="{Binding EstaCarregandoNomes}">
+            <ActivityIndicator IsRunning="{Binding EstaCarregandoNomes}"
+                               Color="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}" />
+            <Label Text="Consultando o IBGE..."
+                   FontSize="13"
+                   HorizontalTextAlignment="Center"
+                   TextColor="{AppThemeBinding Light=#667085, Dark=#98A2B3}" />
+        </VerticalStackLayout>
+
+        <!-- Estado inicial -->
+        <VerticalStackLayout Grid.Row="4"
+                             Spacing="8"
+                             VerticalOptions="Center"
+                             IsVisible="{Binding MostrarDicaInicial}">
+            <Label Text="{Binding TextoDicaInicial}"
+                   FontSize="14"
+                   HorizontalTextAlignment="Center"
+                   TextColor="{AppThemeBinding Light=#667085, Dark=#98A2B3}" />
+        </VerticalStackLayout>
+
+        <!-- Sem resultados para a localidade -->
+        <VerticalStackLayout Grid.Row="4"
+                             Spacing="8"
+                             VerticalOptions="Center"
+                             IsVisible="{Binding MostrarSemResultados}">
+            <Label Text="Nenhum nome encontrado para esta localidade."
+                   FontSize="14"
+                   HorizontalTextAlignment="Center"
+                   TextColor="{AppThemeBinding Light=#667085, Dark=#98A2B3}" />
+        </VerticalStackLayout>
+
+    </Grid>
+
+</ContentPage>
