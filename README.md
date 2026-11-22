@@ -5,7 +5,7 @@ Aplicativo .NET MAUI para consultar os nomes mais comuns de homens e mulheres, a
 ## Integrantes do grupo
 
 - **Eduardo Mendes Pereira**
-- **Gabriel Tavares**
+- **Gabriel Luís Tavares da Costa**
 
 ## Teste rápido: APK pronto
 
