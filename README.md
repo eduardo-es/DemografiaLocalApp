@@ -2,6 +2,11 @@
 
 Aplicativo .NET MAUI para consultar os nomes mais comuns de homens e mulheres, além dos sobrenomes mais frequentes, em qualquer estado ou município do Brasil. Os dados vêm das APIs públicas do IBGE (Censo 2022).
 
+## Integrantes do grupo
+
+- **Eduardo Mendes Pereira**
+- **Gabriel Tavares**
+
 ## Teste rápido: APK pronto
 
 Para testar sem instalar o .NET ou o Android SDK, use o APK de depuração incluído neste repositório:
