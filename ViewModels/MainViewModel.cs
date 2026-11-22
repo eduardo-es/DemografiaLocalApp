@@ -75,6 +75,8 @@ public partial class MainViewModel : ObservableObject
     public partial bool EstaCarregandoEstados { get; set; }
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(PodeSelecionarMunicipio))]
+    [NotifyPropertyChangedFor(nameof(DicaMunicipio))]
     [NotifyPropertyChangedFor(nameof(MostrarDicaInicial))]
     [NotifyPropertyChangedFor(nameof(MostrarSemResultados))]
     public partial bool EstaCarregandoMunicipios { get; set; }
@@ -101,6 +103,18 @@ public partial class MainViewModel : ObservableObject
     // ---------- Propriedades calculadas ----------
 
     public bool ModoEstado => Modo == TipoLocalidade.Estado;
+
+    public string TextoEstado => EstadoSelecionado is null
+        ? "Buscar estado ou sigla  ▾" : EstadoSelecionado.Descricao + "  ▾";
+    public string TextoMunicipio => MunicipioSelecionado is null
+        ? "Buscar município  ▾" : MunicipioSelecionado.Descricao + "  ▾";
+    public bool PodeSelecionarEstado => !EstaCarregandoEstados && Estados.Count > 0;
+    public bool PodeSelecionarMunicipio => EstadoSelecionado is not null &&
+        !EstaCarregandoMunicipios && Municipios.Count > 0;
+    public string DicaMunicipio => EstadoSelecionado is null
+        ? "Selecione primeiro um estado."
+        : EstaCarregandoMunicipios ? "Carregando municípios…"
+        : $"{Municipios.Count} municípios disponíveis. Toque para buscar.";
 
     public bool ModoMunicipio => Modo == TipoLocalidade.Municipio;
 
@@ -175,6 +189,7 @@ public partial class MainViewModel : ObservableObject
         finally
         {
             EstaCarregandoEstados = false;
+            OnPropertyChanged(nameof(PodeSelecionarEstado));
         }
     }
 
@@ -239,6 +254,8 @@ public partial class MainViewModel : ObservableObject
                 EstaCarregandoMunicipios = false;
 
             cts.Dispose();
+            OnPropertyChanged(nameof(PodeSelecionarMunicipio));
+            OnPropertyChanged(nameof(DicaMunicipio));
         }
     }
 
@@ -336,6 +353,9 @@ public partial class MainViewModel : ObservableObject
 
     partial void OnEstadoSelecionadoChanged(Estado? value)
     {
+        OnPropertyChanged(nameof(TextoEstado));
+        OnPropertyChanged(nameof(PodeSelecionarMunicipio));
+        OnPropertyChanged(nameof(DicaMunicipio));
         if (Modo == TipoLocalidade.Municipio)
             _ = CarregarMunicipiosCommand.ExecuteAsync(null);
         else
@@ -344,6 +364,7 @@ public partial class MainViewModel : ObservableObject
 
     partial void OnMunicipioSelecionadoChanged(Municipio? value)
     {
+        OnPropertyChanged(nameof(TextoMunicipio));
         // Ignora limpezas internas e deseleções; só consulta ao escolher um município.
         if (_ignorarMudancaDeMunicipio || Modo != TipoLocalidade.Municipio || value is null)
             return;

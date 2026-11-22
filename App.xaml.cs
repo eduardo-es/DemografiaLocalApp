@@ -6,6 +6,8 @@
 
         public App(IServiceProvider services)
         {
+            System.Globalization.CultureInfo.DefaultThreadCurrentCulture =
+                System.Globalization.CultureInfo.GetCultureInfo("pt-BR");
             InitializeComponent();
             _services = services;
         }
